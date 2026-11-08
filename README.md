@@ -62,6 +62,10 @@ Then say: *"Set up my brand profile"*. That runs `brand-setup`, and you're away.
 - If you're in a regulated industry, these skills will carry your required wording, but they don't know it. You (or your compliance team) put it in your brand profile. There's a UK financial services example included as a reference.
 - The video tools have been run hard on our own footage on a Mac. They're written to be cross-platform, but Windows and Linux have had less mileage. Issues and pull requests welcome.
 
+## Credit
+
+Our writing skills started from Corey Haines' copywriting and copy-editing skills in [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills) (MIT) and grew from there. If you want a wider shelf of marketing skills, his is the place to start.
+
 ## Keeping up to date
 
 These skills are a snapshot of the private ones we use every day. As ours improve, we bring the lessons across here. Watch the repo or check the changelog on the site.
