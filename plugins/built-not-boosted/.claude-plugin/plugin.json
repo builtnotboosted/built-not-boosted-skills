@@ -1,0 +1,10 @@
+{
+  "name": "built-not-boosted",
+  "version": "1.0.0",
+  "description": "A content engine for small businesses and creators: brand setup, writing, research, scheduling, platform data, video scripting, image generation and video editing, with a review loop and a voice-learning loop so it sounds more like you over time.",
+  "author": { "name": "Built Not Boosted", "url": "https://builtnotboosted.com" },
+  "homepage": "https://builtnotboosted.com",
+  "repository": "https://github.com/builtnotboosted/built-not-boosted-skills",
+  "license": "MIT",
+  "keywords": ["social media", "content", "marketing", "small business", "video", "copywriting", "ai"]
+}

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Take Picker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#1F2124; --panel:#2a2d31; --panel2:#33373c; --line:#3d4248; --ink:#eef0ee; --mute:#9aa19c;
+          --lime:#7FD1AE; --green:#2F855A; --amber:#e0a43a; --red:#e05a4f; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:#17191b; border-bottom:1px solid var(--line);
+           padding:10px 18px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:15px; margin:0 8px 0 0; font-weight:700; }
+  header h1 b { color:var(--lime); }
+  .prog { color:var(--mute); }
+  .prog strong { color:var(--ink); }
+  button { background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:6px;
+           padding:6px 11px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--lime); }
+  button.primary { background:var(--green); border-color:var(--green); }
+  button.on { background:var(--lime); color:#111; border-color:var(--lime); font-weight:600; }
+  .saved { color:var(--mute); font-size:12px; min-width:90px; }
+  main { display:grid; grid-template-columns: minmax(0,1fr) 320px; gap:18px; padding:16px 18px 80px; }
+  #list { min-width:0; }
+  aside { position:sticky; top:62px; align-self:start; background:var(--panel); border:1px solid var(--line);
+          border-radius:10px; padding:12px; }
+  .vwrap { position:relative; width:270px; height:480px; margin:0 auto; background:#000; border-radius:6px; overflow:hidden; }
+  .vwrap.land { width:480px; height:270px; }
+  .vwrap video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .now { margin-top:10px; font-size:13px; color:var(--mute); min-height:38px; }
+  .now b { color:var(--ink); }
+  .keys { margin-top:10px; font-size:12px; color:var(--mute); border-top:1px solid var(--line); padding-top:8px; }
+  kbd { background:var(--panel2); border:1px solid var(--line); border-radius:4px; padding:0 5px; font-size:11px; }
+  .para { margin:22px 0 6px; color:var(--mute); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+  .unit { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--line);
+          border-radius:8px; padding:10px 12px; margin:8px 0; }
+  .unit.green { border-left-color:var(--green); } .unit.amber { border-left-color:var(--amber); }
+  .unit.red, .unit.missing { border-left-color:var(--red); }
+  .unit.focus { outline:2px solid var(--lime); }
+  .unit.confirmed { opacity:.82; }
+  .uhead { display:flex; gap:10px; align-items:baseline; }
+  .chip { font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; text-transform:uppercase; }
+  .chip.green { background:rgba(47,133,90,.25); color:#6fd49a; } .chip.amber { background:rgba(224,164,58,.2); color:var(--amber); }
+  .chip.red, .chip.missing { background:rgba(224,90,79,.2); color:var(--red); }
+  .script { font-size:15px; flex:1; }
+  .sid { color:var(--mute); font-size:12px; }
+  .ok { color:var(--lime); font-weight:700; font-size:12px; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; }
+  td { padding:5px 6px; border-top:1px solid var(--line); vertical-align:top; }
+  tr.sel td { background:rgba(127,209,174,.08); }
+  td.pick { width:74px; white-space:nowrap; }
+  td.play { width:38px; }
+  td.score { width:54px; color:var(--mute); font-variant-numeric:tabular-nums; }
+  .spoken .sub { text-decoration:underline wavy var(--amber); text-underline-offset:3px; }
+  .spoken .ins { color:var(--mute); font-style:italic; }
+  .spoken .filler, .spoken .repeat { color:var(--red); text-decoration:line-through; }
+  .missing-w { color:var(--mute); font-size:12px; }
+  .missing-w s { color:#7d8580; }
+  .flags { margin-top:3px; display:flex; gap:5px; flex-wrap:wrap; }
+  .flag { font-size:11px; padding:0 6px; border-radius:8px; background:var(--panel2); color:var(--mute); border:1px solid var(--line); }
+  .flag.bad { color:var(--red); border-color:rgba(224,90,79,.5); }
+  .flag.warn { color:var(--amber); border-color:rgba(224,164,58,.45); }
+  .trim { font-size:12px; color:var(--ink); margin-top:4px; }
+  .trim input { accent-color:var(--lime); }
+  .nudge { margin-top:5px; font-size:12px; color:var(--mute); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .nudge button { padding:1px 7px; font-size:12px; }
+  .row-skip td { color:var(--mute); }
+  .note { width:100%; margin-top:6px; background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+          border-radius:6px; padding:5px 8px; font:inherit; font-size:13px; }
+  .ubtns { margin-top:6px; display:flex; gap:6px; }
+  .help { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px; margin-bottom:6px; color:var(--mute); }
+  .help b { color:var(--ink); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Take Picker · <b id="ttl"></b></h1>
+  <span class="prog" id="prog"></span>
+  <button id="fNeed">Needs your ears</button>
+  <button id="fAll" class="on">All lines</button>
+  <button id="fUnc">Unconfirmed</button>
+  <button id="bulk">Confirm all green</button>
+  <button id="seq" class="primary">▶ Play my cut</button>
+  <span class="saved" id="saved"></span>
+</header>
+<main>
+  <div id="list">
+    <div class="help"><b>How this works:</b> every line of the script is listed with each take you did of it.
+      The machine's pick is pre-selected. <b>Listen to the amber and red lines</b>, pick the clean read (or <i>Skip line</i>),
+      tick/untick the suggested stumble trims, and confirm. Green lines only need a skim. Everything autosaves.
+      <br><span style="color:#e05a4f;text-decoration:line-through">red strike</span> = stumble / repeat ·
+      <span style="text-decoration:underline wavy #e0a43a">amber wave</span> = said differently to the script ·
+      <i>grey italic</i> = ad-lib not in the script.</div>
+  </div>
+  <aside>
+    <div class="vwrap"><video id="vA" playsinline preload="auto"></video><video id="vB" playsinline preload="auto" style="visibility:hidden"></video></div>
+    <div class="now" id="now">Press ▶ on any take.</div>
+    <div class="keys"><kbd>↓</kbd>/<kbd>↑</kbd> next/prev line · <kbd>1</kbd>–<kbd>9</kbd> pick take · <kbd>S</kbd> skip line ·
+      <kbd>Space</kbd> play pick · <kbd>C</kbd> confirm · <kbd>Esc</kbd> stop</div>
+  </aside>
+</main>
+<script>
+let D, CL, P = {}, filter = "all", focus = 0, saveT = null;
+const $ = s => document.querySelector(s);
+const vids = [$("#vA"), $("#vB")]; let vi = 0;
+const esc = s => s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+async function boot() {
+  D = await (await fetch("takes.json")).json();
+  try { const m = await (await fetch("meta.json")).json(); $("#ttl").textContent = m.title || ""; document.title = "Take Picker · " + (m.title || ""); } catch (e) {}
+  CL = await (await fetch("clips.json")).json();
+  if (CL._format === "long") document.querySelector(".vwrap").classList.add("land");
+  try { const r = await fetch("picks.json"); if (r.ok) P = await r.json(); } catch (e) {}
+  for (const s of D.sentences) {
+    const k = String(s.sid);
+    if (!P[k]) P[k] = { take: s.auto === null ? 0 : s.auto + 1, confirmed: false, nin: 0, nout: 0, trims: {}, note: "" };
+  }
+  render(); setFocus(0, false);
+}
+function take(s, n) { return s.takes[n - 1]; }
+function key(s, t) { return `S${String(s.sid).padStart(2, "0")}_t${t.take}`; }
+function shown(s) {
+  const p = P[s.sid];
+  if (filter === "need") return s.status !== "green";
+  if (filter === "unc") return !p.confirmed;
+  return true;
+}
+function render() {
+  const L = $("#list"); L.querySelectorAll(".para,.unit").forEach(e => e.remove());
+  let lastPara = -1;
+  D.sentences.forEach((s, ui) => {
+    if (!shown(s)) return;
+    if (s.para !== lastPara) { const h = document.createElement("div"); h.className = "para"; h.textContent = `Script paragraph ${s.para + 1}`; L.appendChild(h); lastPara = s.para; }
+    const p = P[s.sid];
+    const u = document.createElement("div");
+    u.className = `unit ${s.status}${p.confirmed ? " confirmed" : ""}`; u.dataset.ui = ui;
+    let h = `<div class="uhead"><span class="chip ${s.status}">${s.status === "green" ? "clean" : s.status === "amber" ? "check" : s.status}</span>
+      <span class="script">${esc(s.text)}</span><span class="sid">L${s.sid + 1}</span>${p.confirmed ? '<span class="ok">✓ confirmed</span>' : ""}</div><table>`;
+    s.takes.forEach((t, k) => {
+      const n = k + 1, sel = p.take === n;
+      const sp = t.toks.map(x => x.kind === "match" ? esc(x.tok) : `<span class="${x.kind}">${esc(x.tok)}</span>`).join(" ");
+      const fl = [];
+      if (!t.complete) fl.push(`<span class="flag bad">${t.abandoned ? "abandoned" : "incomplete"}</span>`);
+      if (t.double_read) fl.push(`<span class="flag bad">read twice in this take — keep the trim</span>`);
+      if (t.repeats) fl.push(`<span class="flag bad">restart ×${t.repeats}</span>`);
+      if (t.fillers) fl.push(`<span class="flag bad">filler ×${t.fillers}</span>`);
+      t.disagree.forEach(x => fl.push(`<span class="flag warn">check by ear: ${esc(x)}</span>`));
+      t.lowprob.forEach(x => fl.push(`<span class="flag warn">unclear: ${esc(x)}</span>`));
+      t.stretched.forEach(x => fl.push(`<span class="flag warn">drawn out: ${esc(x)}</span>`));
+      t.long_gaps.forEach(x => fl.push(`<span class="flag">pause ${x}s</span>`));
+      if (k === s.auto) fl.push(`<span class="flag" style="color:var(--lime)">machine pick</span>`);
+      let trims = "";
+      t.inner_cuts.forEach((c, ci) => {
+        const dflt = c.default !== false, on = sel ? (p.trims[ci] !== undefined ? p.trims[ci] : dflt) : dflt;
+        trims += `<div class="trim"><label><input type="checkbox" data-trim="${ci}" ${on ? "checked" : ""} ${sel ? "" : "disabled"}> cut ${c.default === false ? "natural um (kept unless ticked)" : "stumble"} “${esc(c.words)}” (${(c.to - c.from).toFixed(2)}s)</label></div>`;
+      });
+      const nud = sel ? `<div class="nudge">start <button data-n="nin:-0.1">−0.1</button><b>${(p.nin >= 0 ? "+" : "") + p.nin.toFixed(1)}s</b><button data-n="nin:0.1">+0.1</button>
+        &nbsp; end <button data-n="nout:-0.1">−0.1</button><b>${(p.nout >= 0 ? "+" : "") + p.nout.toFixed(1)}s</b><button data-n="nout:0.1">+0.1</button>
+        <span>· raw ${t.in.toFixed(2)}–${t.out.toFixed(2)}s</span></div>` : "";
+      h += `<tr class="${sel ? "sel" : ""}"><td class="pick"><label><input type="radio" name="u${s.sid}" data-take="${n}" ${sel ? "checked" : ""}> take ${n}</label></td>
+        <td class="play"><button data-play="${n}" title="play">▶</button></td><td class="score">${t.score.toFixed(0)}</td>
+        <td><div class="spoken">${sp}</div>${t.missing.length ? `<div class="missing-w">script words not said: <s>${esc(t.missing.join(" "))}</s></div>` : ""}
+        <div class="flags">${fl.join("")}</div>${trims}${nud}</td></tr>`;
+    });
+    h += `<tr class="row-skip"><td class="pick"><label><input type="radio" name="u${s.sid}" data-take="0" ${p.take === 0 ? "checked" : ""}> skip</label></td><td></td><td></td>
+      <td>Leave this line out of the edit${s.takes.length ? "" : " (never said on camera)"}</td></tr></table>
+      <input class="note" placeholder="Note for the edit (optional)…" value="${esc(p.note || "")}">
+      <div class="ubtns"><button data-confirm>${p.confirmed ? "Un-confirm" : "✓ Confirm this line"}</button></div>`;
+    u.innerHTML = h; L.appendChild(u);
+    u.addEventListener("click", e => {
+      const t = e.target; focus = ui; markFocus();
+      if (t.dataset.take !== undefined) { p.take = +t.dataset.take; p.nin = 0; p.nout = 0; p.trims = {}; p.confirmed = true; changed(); }
+      else if (t.dataset.play) { playTake(s, +t.dataset.play); }
+      else if (t.dataset.trim !== undefined) { p.trims[t.dataset.trim] = t.checked; changed(); }
+      else if (t.dataset.n) { const [f, v] = t.dataset.n.split(":"); p[f] = Math.round((p[f] + +v) * 10) / 10; changed(); }
+      else if (t.hasAttribute("data-confirm")) { p.confirmed = !p.confirmed; changed(); }
+    });
+    u.querySelector(".note").addEventListener("input", e => { p.note = e.target.value; changed(false); });
+  });
+  progress(); markFocus();
+}
+function progress() {
+  const n = D.sentences.length, c = D.sentences.filter(s => P[s.sid].confirmed).length;
+  const need = D.sentences.filter(s => s.status !== "green" && !P[s.sid].confirmed).length;
+  $("#prog").innerHTML = `<strong>${c}</strong>/${n} confirmed · <strong>${need}</strong> still need your ears`;
+}
+function changed(rerender = true) {
+  if (rerender) render(); else progress();
+  try { localStorage.setItem("picks", JSON.stringify(P)); } catch (e) {}
+  $("#saved").textContent = "saving…"; clearTimeout(saveT);
+  saveT = setTimeout(async () => {
+    try { await fetch("/save", { method: "POST", body: JSON.stringify(P) }); $("#saved").textContent = "saved ✓"; }
+    catch (e) { $("#saved").textContent = "save failed (kept locally)"; }
+  }, 400);
+}
+function unitEls() { return [...document.querySelectorAll(".unit")]; }
+function markFocus() { unitEls().forEach(e => e.classList.toggle("focus", +e.dataset.ui === focus)); }
+function setFocus(ui, scroll = true) {
+  focus = ui; markFocus();
+  const el = document.querySelector(`.unit[data-ui="${ui}"]`); if (el && scroll) el.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+function segOf(s, n) {
+  const t = take(s, n), p = P[s.sid], cs = CL[key(s, t)].clip_start, useP = p.take === n;
+  const skips = t.inner_cuts.map((c, ci) => ({ c, ci })).filter(o => (useP && p.trims[o.ci] !== undefined) ? p.trims[o.ci] : o.c.default !== false)
+                 .map(o => [o.c.from - cs, o.c.to - cs]);
+  return { src: `clips/${key(s, t)}.mp4`, a: t.in - cs + (useP ? p.nin : 0), b: t.out - cs + (useP ? p.nout : 0),
+           skips, label: `L${s.sid + 1} take ${n}: ${s.text}` };
+}
+// ---------- playback (double-buffered, rAF-precise in/out + skip) ----------
+let queue = [], qi = 0, raf = null;
+function stop() { clearTimeout(raf); vids.forEach(v => v.pause()); queue = []; }
+function load(v, seg) { return new Promise(res => {
+  const go = () => { v.currentTime = Math.max(0, seg.a); v.onseeked = () => { v.onseeked = null; res(); }; };
+  if (v.getAttribute("src") === seg.src && v.readyState >= 1) go(); else { v.src = seg.src; v.onloadedmetadata = go; }
+}); }
+async function startQueue(segs) {
+  stop(); queue = segs; qi = 0; if (!queue.length) return;
+  await load(vids[vi], queue[0]); show(vids[vi]); vids[vi].play(); $("#now").innerHTML = `<b>Playing</b> ${esc(queue[0].label)}`;
+  if (queue[1]) load(vids[1 - vi], queue[1]);
+  tick();
+}
+function show(v) { vids.forEach(x => x.style.visibility = x === v ? "visible" : "hidden"); }
+function tick() {
+  const v = vids[vi], seg = queue[qi]; if (!seg) return;
+  const t = v.currentTime;
+  seg.done = seg.done || [];
+  for (let i = 0; i < seg.skips.length; i++) {
+    const [a, b] = seg.skips[i];
+    // fire each skip once (a seek lands on a frame just before b, which would otherwise re-trigger forever)
+    if (!seg.done[i] && t >= a - 0.01 && t < b - 0.05) { seg.done[i] = true; v.currentTime = b + 0.02; break; }
+  }
+  if (t >= seg.b) {
+    qi++;
+    if (qi >= queue.length) { v.pause(); $("#now").textContent = "Done."; return; }
+    v.pause(); vi = 1 - vi; const nv = vids[vi];
+    const nxt = queue[qi];
+    (async () => {
+      if (nv.getAttribute("src") !== nxt.src || Math.abs(nv.currentTime - nxt.a) > 0.15) await load(nv, nxt);
+      show(nv); nv.play(); $("#now").innerHTML = `<b>Playing</b> ${esc(nxt.label)}`;
+      if (queue[qi + 1]) load(vids[1 - vi], queue[qi + 1]);
+      raf = setTimeout(tick, 15);
+    })();
+    return;
+  }
+  raf = setTimeout(tick, 15);
+}
+function playTake(s, n) { startQueue([segOf(s, n)]); }
+$("#seq").onclick = () => {
+  const segs = D.sentences.filter(s => P[s.sid].take > 0 && s.takes.length).map(s => segOf(s, P[s.sid].take));
+  startQueue(segs.slice(D.sentences.slice(0, focus).filter(s => P[s.sid].take > 0).length));
+};
+$("#bulk").onclick = () => { D.sentences.forEach(s => { if (s.status === "green") P[s.sid].confirmed = true; }); changed(); };
+for (const [id, f] of [["#fNeed", "need"], ["#fAll", "all"], ["#fUnc", "unc"]])
+  $(id).onclick = () => { filter = f; document.querySelectorAll("header button").forEach(b => b.classList.remove("on")); $(id).classList.add("on"); render(); };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+  const vis = unitEls().map(x => +x.dataset.ui); const pos = vis.indexOf(focus);
+  const s = D.sentences[focus], p = s && P[s.sid];
+  if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); if (pos < vis.length - 1) setFocus(vis[pos + 1]); }
+  else if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); if (pos > 0) setFocus(vis[pos - 1]); }
+  else if (/^[1-9]$/.test(e.key) && s && +e.key <= s.takes.length) { p.take = +e.key; p.trims = {}; p.nin = p.nout = 0; p.confirmed = true; changed(); }
+  else if (e.key === "s" && p) { p.take = 0; p.confirmed = true; changed(); }
+  else if (e.key === "c" && p) { p.confirmed = !p.confirmed; changed(); }
+  else if (e.key === " " && p && p.take > 0) { e.preventDefault(); playTake(s, p.take); }
+  else if (e.key === "Escape") stop();
+});
+boot();
+</script>
+</body>
+</html>

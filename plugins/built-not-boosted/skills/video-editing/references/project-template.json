@@ -1,0 +1,21 @@
+{
+ "slug": "",
+ "title": "",
+ "version": "v1",
+ "raw": "",
+ "pack": "",
+ "out_dir": "",
+ "vocab": [],
+ "syn": {},
+ "brand": {},
+ "framing": {"face_x": 540, "eye_y": 900, "zoom": 1.14},
+ "exit_tail": null,
+ "broll_root": "",
+ "graphics": "graphics.json",
+ "cues": [],
+ "captions": {"fix": [], "key": [], "hide_under": ["section"], "locale": "en-GB"},
+ "cover": {"frame": null, "reframe": {"scale": 1.12, "x": 0, "y": 64}, "lead": "A", "variants": {}, "wordmark": null},
+ "gate": {"allow": []},
+ "cut_check": {"allow": []},
+ "build": {"keep_pause": []}
+}

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  :root { --lime:#FFD166; --green:#FFD166; --ink:#ffffff; --soft:#ececec; --mute:#b8b8b8;
+          --panel:rgba(20,22,25,.93); --panel2:rgba(31,33,36,.96); }
+  /* --lime = the brand ACCENT (punch word, chips, bars); --green = the brand PRIMARY (underlines). Names kept for
+     compatibility; mg_render.js overwrites both from build/brand.json. */
+  html, body { margin:0; width:1080px; height:1920px; background:transparent; overflow:hidden; }
+  body { font-family: Inter, Arial, Helvetica, sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; }
+  #root { position:absolute; inset:0; }
+  .abs { position:absolute; }
+  .panel { position:absolute; left:72px; width:936px; box-sizing:border-box; background:var(--panel);
+           border-radius:24px; padding:36px 42px; box-shadow:0 14px 44px rgba(0,0,0,.38); }
+  .hl { font-family:"Barlow Condensed","Arial Narrow","Liberation Sans Narrow",Arial,sans-serif; font-weight:700; text-transform:uppercase;
+        line-height:.98; letter-spacing:-.5px; }
+  .lime { color:var(--lime); }
+  .ul { height:14px; background:var(--green); border-radius:2px; margin-top:10px; transform-origin:left center; }
+  .tab { display:inline-flex; align-items:center; gap:16px; font-weight:700; font-size:36px; letter-spacing:2px;
+         text-transform:uppercase; color:var(--soft); }
+  .tab::before { content:""; width:10px; height:38px; background:var(--lime); border-radius:2px; }
+  .chipq { display:inline-block; background:var(--lime); color:#111; font-family:"Barlow Condensed","Arial Narrow",Arial; font-weight:700;
+           font-size:50px; text-transform:uppercase; padding:12px 26px; border-radius:12px; letter-spacing:.5px; }
+  .ans { font-weight:700; font-size:54px; line-height:1.16; }
+  .src { font-size:26px; color:var(--mute); margin-top:16px; letter-spacing:.3px; }
+  .dot { width:66px; height:66px; border-radius:50%; box-sizing:border-box; }
+  .q { font-weight:700; font-size:37px; line-height:1.2; }
+  .nm { font-weight:700; font-size:30px; color:var(--lime); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px; }
+</style></head>
+<body><div id="root"></div>
+<script>
+// ---------- tiny deterministic animation engine ----------
+let D = 4, A = [], U = [], OUT = 0.32;
+const ease = {
+  out: x => 1 - Math.pow(1 - x, 3),
+  back: x => { const c1 = 1.55, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); },
+  inout: x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2,
+};
+const cl = x => Math.max(0, Math.min(1, x)), L = (a, b, p) => a + (b - a) * p;
+const root = document.getElementById("root");
+function el(html, style = "") { const d = document.createElement("div"); d.innerHTML = html; const e = d.firstElementChild; if (style) e.style.cssText += style; return e; }
+// animate an element in: from-state -> rest, starting at t0 for dur seconds
+function inn(e, t0, dur, from, e_ = "out") { A.push({ e, t0, dur, from, e_ }); return e; }
+window.setup = (tpl, P, dur) => { D = dur; A = []; U = []; root.innerHTML = ""; T[tpl](P); window.render(0); };
+window.render = t => {
+  for (const a of A) {
+    const p = ease[a.e_](cl((t - a.t0) / a.dur)), f = a.from;
+    const o = L(f.o ?? 0, 1, Math.min(1, p * 1.4));
+    const x = L(f.x ?? 0, 0, p), y = L(f.y ?? 0, 0, p), s = L(f.s ?? 1, 1, p), r = L(f.r ?? 0, 0, p);
+    a.e.style.opacity = o;
+    a.e.style.transform = `translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)` + (f.rx !== undefined ? ` perspective(900px) rotateX(${L(f.rx, 0, p)}deg)` : "");
+    if (f.clip !== undefined) a.e.style.clipPath = `inset(0 ${Math.max(0, 100 - L(f.clip, 100, p))}% 0 0)`;
+    if (f.sx !== undefined) a.e.style.transform += ` scaleX(${L(f.sx, 1, p)})`;
+  }
+  for (const u of U) u(t);
+  const q = ease.inout(cl((t - (D - OUT)) / OUT));       // shared exit
+  root.style.opacity = 1 - q; root.style.transform = `translateY(${-26 * q}px)`;
+};
+
+// ---------- templates ----------
+const T = {};
+// Hook title: big headline with ONE lime punch word + green underline, kicker tab beneath
+T.title = P => {
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 170}px"></div>`));
+  P.lines.forEach((ln, i) => {
+    const html = ln.replace(P.punch, `<span class="lime">${P.punch}</span>`);
+    inn(p.appendChild(el(`<div class="hl" style="font-size:${P.size || 112}px">${html}</div>`)), 0.12 + i * 0.12, 0.5, { y: 46 });
+  });
+  inn(p.appendChild(el(`<div class="ul"></div>`)), 0.42, 0.5, { o: 1, sx: 0 });
+  if (P.kicker) inn(p.appendChild(el(`<div class="tab" style="margin-top:24px">${P.kicker}</div>`)), 0.6, 0.5, { x: -30 });
+  inn(p, 0, 0.42, { clip: 0, o: 1 });
+};
+// Lower third: dark block + accent bar, name and role
+T.lower = P => {
+  const box = root.appendChild(el(`<div class="abs" style="left:48px;top:1716px;background:rgb(10,12,14);border-radius:16px;padding:22px 34px 22px 26px;display:flex;gap:22px;align-items:stretch;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+     <div style="width:12px;background:var(--lime);border-radius:2px"></div>
+     <div><div style="font-weight:700;font-size:46px">${P.name}</div><div style="font-size:33px;color:var(--soft);margin-top:6px">${P.role}</div></div></div>`));
+  inn(box, 0, 0.5, { clip: 0, o: 1 });
+  inn(box.children[1], 0.2, 0.45, { x: -24 });
+};
+// Big number with a count-up, label tab, optional change chip and sub line.
+// params: label, from, to, toLabel (final text, e.g. "£4.50"), prefix ("£"), suffix ("%"), decimals (2), delta ("+50p"), sub, top
+T.stat = P => {
+  const pre = P.prefix ?? "", suf = P.suffix ?? "", dp = P.decimals ?? 0;
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 170}px;text-align:center"></div>`));
+  inn(p.appendChild(el(`<div class="tab">${P.label}</div>`)), 0.15, 0.45, { y: 20 });
+  const num = inn(p.appendChild(el(`<div class="hl" style="font-size:${P.size || 250}px;line-height:1;margin:14px 0 6px">${pre}${Number(P.from).toFixed(dp)}${suf}</div>`)), 0.22, 0.5, { s: .7 }, "back");
+  const row = p.appendChild(el(`<div style="display:flex;gap:22px;justify-content:center;align-items:center"></div>`));
+  if (P.delta) inn(row.appendChild(el(`<span class="chipq" style="font-size:46px">${P.delta}</span>`)), 1.05, 0.45, { s: .6 }, "back");
+  if (P.sub) inn(row.appendChild(el(`<span style="font-size:40px;font-weight:700;color:var(--soft)">${P.sub}</span>`)), 1.2, 0.45, { x: 20 });
+  inn(p, 0, 0.4, { clip: 0, o: 1 });
+  U.push(t => { const k = ease.out(cl((t - 0.3) / 0.9)); const v = L(Number(P.from), Number(P.to), k);
+                num.innerHTML = k >= 1 ? `<span class="lime">${P.toLabel ?? (pre + Number(P.to).toFixed(dp) + suf)}</span>` : pre + v.toFixed(dp) + suf; });
+};
+// A count of dots: e.g. "7 out of 10" or a vote. params: label, forN, againstN, note, top
+T.vote = P => {
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 170}px;text-align:center"></div>`));
+  inn(p.appendChild(el(`<div class="tab">${P.label}</div>`)), 0.12, 0.45, { y: 20 });
+  inn(p.appendChild(el(`<div class="hl" style="font-size:220px;line-height:1;margin:10px 0 18px"><span class="lime">${P.forN}</span>–${P.againstN}</div>`)), 0.2, 0.5, { s: .75 }, "back");
+  const row = p.appendChild(el(`<div style="display:flex;gap:18px;justify-content:center"></div>`));
+  for (let i = 0; i < P.forN + P.againstN; i++) {
+    const yes = i < P.forN;
+    inn(row.appendChild(el(`<div class="dot" style="${yes ? "background:var(--lime)" : "border:7px solid var(--ink)"}"></div>`)), 0.55 + i * 0.07, 0.35, { s: 0 }, "back");
+  }
+  if (P.note) inn(p.appendChild(el(`<div style="font-size:34px;font-weight:700;color:var(--soft);margin-top:20px">${P.note}</div>`)), 1.3, 0.45, { y: 16 });
+  inn(p, 0, 0.4, { clip: 0, o: 1 });
+};
+// Rubber-stamp badge
+T.stamp = P => {
+  const s = root.appendChild(el(`<div class="abs hl" style="left:50%;top:${P.top || 300}px;transform-origin:center;white-space:nowrap">
+    <div style="transform:translateX(-50%) rotate(-4deg);border:9px solid var(--lime);border-radius:18px;padding:22px 40px;background:var(--panel);font-size:${P.size || 84}px;text-align:center;line-height:1">${P.html}</div></div>`));
+  inn(s, 0.05, 0.42, { s: 1.6, o: 0 }, "back");
+};
+// Simple then -> now -> where it is heading line: two real points and a dashed direction arrow (no invented number).
+// params: label, v0 (number), l0 (label under it), v1 (number), l1, l2 (text by the arrow), dir ("down"|"up"|"flat"),
+//         unit ("%"), source (shown under the chart), top
+T.chart = P => {
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 160}px;padding-bottom:26px"></div>`));
+  inn(p.appendChild(el(`<div class="tab">${P.label}</div>`)), 0.1, 0.4, { y: 16 });
+  const v0 = Number(P.v0), v1 = Number(P.v1), u = P.unit ?? "";
+  const lo = Math.min(v0, v1), hi = Math.max(v0, v1), pad = (hi - lo || 1) * 0.6;
+  const W = 852, H = 400, y = v => H - 60 - (v - (lo - pad)) * (H - 130) / ((hi + pad) - (lo - pad));
+  const x0 = 110, x1 = 470, x2 = 720;
+  const v2 = P.dir === "up" ? v1 + (hi - lo || 1) * 0.5 : P.dir === "flat" ? v1 : v1 - (hi - lo || 1) * 0.5;
+  const svg = p.appendChild(el(`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin-top:18px;overflow:visible">
+    <line x1="40" y1="${H - 40}" x2="${W - 10}" y2="${H - 40}" stroke="#5b6168" stroke-width="3"/>
+    <path id="up" d="M${x0},${y(v0)} L${x1},${y(v1)}" stroke="var(--lime)" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path id="dn" d="M${x1},${y(v1)} L${x2 - 18},${y(v2)}" stroke="#fff" stroke-width="8" fill="none" stroke-dasharray="20 16" stroke-linecap="round"/>
+    <circle id="ar" cx="${x2}" cy="${y(v2)}" r="14" fill="#fff"/>
+    <circle id="d0" cx="${x0}" cy="${y(v0)}" r="20" fill="#fff"/><circle id="d1" cx="${x1}" cy="${y(v1)}" r="22" fill="var(--lime)"/>
+    <text x="${x0}" y="${y(v0) - 46}" text-anchor="middle" fill="#fff" font-family="Barlow Condensed,Arial Narrow,Arial" font-weight="700" font-size="74">${P.v0}${u}</text>
+    <text x="${x0}" y="${H}" text-anchor="middle" fill="var(--mute)" font-family="Inter,Arial" font-weight="700" font-size="30">${P.l0}</text>
+    <text id="t1" x="${x1}" y="${y(v1) - 48}" text-anchor="middle" fill="var(--lime)" font-family="Barlow Condensed,Arial Narrow,Arial" font-weight="700" font-size="74">${P.v1}${u}</text>
+    <text id="t1b" x="${x1}" y="${H}" text-anchor="middle" fill="var(--mute)" font-family="Inter,Arial" font-weight="700" font-size="30">${P.l1}</text>
+    <text id="t2" x="${W - 6}" y="${Math.min(H - 50, y(v2) + 72)}" text-anchor="end" fill="#fff" font-family="Inter,Arial" font-weight="700" font-size="32">${P.l2 || ""}</text>
+  </svg>`));
+  if (P.source) inn(p.appendChild(el(`<div class="src">${P.source}</div>`)), 1.8, 0.4, {});
+  inn(p, 0, 0.4, { clip: 0, o: 1 });
+  const g = id => svg.querySelector("#" + id);
+  U.push(t => {
+    const pu = ease.inout(cl((t - 0.55) / 0.9)), pd = ease.inout(cl((t - 1.55) / 0.6));
+    g("up").style.clipPath = `inset(0 ${100 - pu * 100}% 0 0)`;
+    g("dn").style.clipPath = `inset(0 ${100 - pd * 100}% 0 0)`; g("dn").style.opacity = pd > 0 ? 1 : 0;
+    g("ar").style.opacity = cl((t - 2.05) / 0.2);
+    g("d0").style.opacity = cl((t - 0.35) / 0.2); g("d1").style.opacity = cl((t - 1.35) / 0.2);
+    for (const id of ["t1", "t1b"]) g(id).style.opacity = cl((t - 1.35) / 0.3);
+    g("t2").style.opacity = cl((t - 2.05) / 0.3);
+  });
+};
+// Stacked fact chips that appear on cue
+T.chips = P => {
+  const box = root.appendChild(el(`<div class="abs" style="left:72px;top:${P.top || 180}px;width:936px;display:flex;flex-direction:column;gap:20px"></div>`));
+  P.items.forEach(it => {
+    const c = box.appendChild(el(`<div style="background:var(--panel);border-radius:18px;padding:24px 32px;display:flex;gap:22px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+      <div style="width:12px;align-self:stretch;background:var(--lime);border-radius:2px"></div>
+      <div class="ans" style="font-size:${it.size || 50}px">${it.html}</div></div>`));
+    inn(c, it.t, 0.45, { x: -60 });
+  });
+};
+// Two sides of an argument: a heading each side, quote cards on cue, the active side bright.
+// params: leftTitle, rightTitle (use <br> to break), left[{who, quote, t}], right[...], top
+T.split = P => {
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 150}px;padding:30px 30px 34px;display:grid;grid-template-columns:1fr 2px 1fr;gap:26px"></div>`));
+  const colL = p.appendChild(el(`<div></div>`)); p.appendChild(el(`<div style="background:#4a5057"></div>`)); const colR = p.appendChild(el(`<div></div>`));
+  const hL = inn(colL.appendChild(el(`<div class="hl" style="font-size:74px">${P.leftTitle || "ONE SIDE"}</div>`)), 0.1, 0.45, { y: 30 });
+  const hR = inn(colR.appendChild(el(`<div class="hl" style="font-size:74px">${P.rightTitle || "THE OTHER"}</div>`)), 0.22, 0.45, { y: 30 });
+  const ulL = colL.appendChild(el(`<div class="ul" style="margin:12px 0 22px"></div>`)), ulR = colR.appendChild(el(`<div class="ul" style="margin:12px 0 22px"></div>`));
+  const card = (col, who, quote, t) => inn(col.appendChild(el(`<div style="margin-bottom:22px"><div class="nm">${who}</div><div class="q">“${quote}”</div></div>`)), t, 0.45, { y: 26 });
+  P.left.forEach(c => card(colL, c.who, c.quote, c.t)); P.right.forEach(c => card(colR, c.who, c.quote, c.t));
+  inn(p, 0, 0.42, { clip: 0, o: 1 });
+  U.push(t => {
+    const rightOn = P.right.some(c => t >= c.t);
+    const l = rightOn ? 0.42 : 1, r = rightOn ? 1 : (t < (P.left[0]?.t ?? 0) ? 1 : 0.42);
+    colL.style.opacity = l; colR.style.opacity = r;
+    ulL.style.transform = `scaleX(${rightOn ? 0 : cl((t - (P.left[0]?.t ?? 0)) / 0.4)})`;
+    ulR.style.transform = `scaleX(${rightOn ? cl((t - P.right[0].t) / 0.4) : 0})`;
+  });
+};
+// Full-width quote banner
+T.banner = P => {
+  const p = root.appendChild(el(`<div class="panel" style="top:${P.top || 210}px"></div>`));
+  inn(p.appendChild(el(`<div class="hl" style="font-size:${P.size || 104}px">${P.html}</div>`)), 0.15, 0.5, { y: 40 });
+  inn(p.appendChild(el(`<div class="ul"></div>`)), 0.45, 0.5, { o: 1, sx: 0 });
+  if (P.by) inn(p.appendChild(el(`<div class="src" style="font-size:34px;color:var(--soft)">${P.by}</div>`)), 0.7, 0.4, { x: -20 });
+  inn(p, 0, 0.42, { clip: 0, o: 1 });
+};
+// Section interstitial (full frame)
+T.section = P => {
+  const bg = root.appendChild(el(`<div class="abs" style="inset:0;background:rgba(18,20,23,.95)"></div>`));
+  inn(bg, 0, 0.25, {});
+  const box = root.appendChild(el(`<div class="abs" style="left:96px;right:96px;top:700px"></div>`));
+  P.lines.forEach((ln, i) => inn(box.appendChild(el(`<div class="hl" style="font-size:${P.size || 150}px">${ln.replace(P.punch, `<span class="lime">${P.punch}</span>`)}</div>`)), 0.12 + i * 0.12, 0.45, { y: 50 }));
+  inn(box.appendChild(el(`<div class="ul" style="height:18px;width:60%"></div>`)), 0.45, 0.45, { o: 1, sx: 0 });
+};
+// Audience question chip + answer
+T.audience = P => {
+  const box = root.appendChild(el(`<div class="abs" style="left:72px;top:${P.top || 170}px;width:936px"></div>`));
+  inn(box.appendChild(el(`<div class="chipq">${P.q}</div>`)), 0.05, 0.42, { x: -50 });
+  const a = box.appendChild(el(`<div class="panel ans" style="position:relative;left:0;margin-top:18px;font-size:${P.size || 54}px">${P.a}</div>`));
+  inn(a, 0.28, 0.45, { y: 30 });
+};
+// Calendar tile
+T.calendar = P => {
+  const box = root.appendChild(el(`<div class="abs" style="left:0;right:0;top:${P.top || 170}px;display:flex;flex-direction:column;align-items:center"></div>`));
+  inn(box.appendChild(el(`<div class="chipq" style="margin-bottom:22px">${P.label}</div>`)), 0.05, 0.4, { y: -20 });
+  const tile = box.appendChild(el(`<div style="width:420px;border-radius:26px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45);text-align:center;transform-origin:top center">
+     <div style="background:var(--green);font-weight:700;font-size:46px;letter-spacing:4px;padding:14px 0">${P.month}</div>
+     <div style="background:#fff;color:#16181b;padding:6px 0 22px"><div class="hl" style="font-size:230px;line-height:1">${P.day}</div>
+       <div style="font-weight:700;font-size:46px;letter-spacing:3px;color:#3b4046">${P.dow}</div></div></div>`));
+  inn(tile, 0.2, 0.6, { rx: -95 }, "back");
+};
+// Comments CTA
+T.cta = P => {
+  const box = root.appendChild(el(`<div class="abs" style="left:72px;width:936px;top:${P.top || 190}px;display:flex;flex-direction:column;align-items:center;gap:22px"></div>`));
+  const row = box.appendChild(el(`<div style="display:flex;gap:16px"></div>`));
+  inn(row.appendChild(el(`<div class="panel hl" style="position:relative;left:0;width:auto;font-size:58px;padding:22px 26px;white-space:nowrap">${P.a}</div>`)), 0.05, 0.42, { x: -60 });
+  inn(row.appendChild(el(`<div class="hl" style="align-self:center;font-size:36px;background:var(--panel);border-radius:50%;width:70px;height:70px;display:flex;align-items:center;justify-content:center">OR</div>`)), 0.25, 0.3, {});
+  inn(row.appendChild(el(`<div class="panel hl" style="position:relative;left:0;width:auto;font-size:58px;padding:22px 26px;white-space:nowrap">${P.b}</div>`)), 0.35, 0.42, { x: 60 });
+  // fit the 936 px box (a long option can run off both edges): shrink the type, then stack A / OR / B.
+  const pills = [...row.children].filter(n => n.classList.contains("panel"));
+  if (row.scrollWidth > 936) {
+    const fs = Math.max(42, Math.floor(58 * 936 / row.scrollWidth));
+    pills.forEach(n => n.style.fontSize = fs + "px");
+    if (row.scrollWidth > 936) { row.style.flexDirection = "column"; row.style.alignItems = "center"; pills.forEach(n => n.style.fontSize = "58px"); }
+  }
+  inn(box.appendChild(el(`<div class="chipq">${P.c}</div>`)), 0.7, 0.45, { s: .6 }, "back");
+};
+</script></body></html>
