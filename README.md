@@ -2,7 +2,7 @@
 
 Ten Claude skills for small businesses, freelancers and creators who want social content that actually brings in work, without paying to boost it.
 
-We built these for our own businesses first. They run the content for a mortgage practice, a networking group and this channel, with every post, script, image and edit written, checked and scheduled with Claude. This is the public version, with the private bits taken out and the methods left in. It won't get you all the way to where we are on day one, but it'll get you a long way, and it gets better the more you use it.
+We built these for our own businesses first. They run the content for our own businesses, the networking groups we host and this channel, with every post, script, image and edit written, checked and scheduled with Claude. This is the public version, with the private bits taken out and the methods left in. It won't get you all the way to where we are on day one, but it'll get you a long way, and it gets better the more you use it.
 
 Free, MIT licensed. Guides and walkthroughs live at **[builtnotboosted.com](https://builtnotboosted.com)**.
 
