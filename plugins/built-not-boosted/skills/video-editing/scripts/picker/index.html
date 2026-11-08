@@ -142,7 +142,7 @@ function render() {
       const sp = t.toks.map(x => x.kind === "match" ? esc(x.tok) : `<span class="${x.kind}">${esc(x.tok)}</span>`).join(" ");
       const fl = [];
       if (!t.complete) fl.push(`<span class="flag bad">${t.abandoned ? "abandoned" : "incomplete"}</span>`);
-      if (t.double_read) fl.push(`<span class="flag bad">read twice in this take — keep the trim</span>`);
+      if (t.double_read) fl.push(`<span class="flag bad">read twice in this take - keep the trim</span>`);
       if (t.repeats) fl.push(`<span class="flag bad">restart ×${t.repeats}</span>`);
       if (t.fillers) fl.push(`<span class="flag bad">filler ×${t.fillers}</span>`);
       t.disagree.forEach(x => fl.push(`<span class="flag warn">check by ear: ${esc(x)}</span>`));

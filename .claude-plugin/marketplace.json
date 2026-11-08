@@ -6,7 +6,7 @@
       "name": "built-not-boosted",
       "source": "./plugins/built-not-boosted",
       "description": "Ten skills for building social content that converts, the way we build ours.",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ]
 }

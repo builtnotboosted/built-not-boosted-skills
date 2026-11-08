@@ -112,7 +112,7 @@ for a, b in zip(TW, TW[1:]):
             if len(ws) >= 2 and not rereads:
                 notes.append(f"{g0:.1f}-{g1:.1f}s: the long pass dropped words here; isolated listen hears '{' '.join(ws)}' (new words, not a re-read)")
             else:
-                fails.append(f"speech with no words at {g0:.1f}-{g1:.1f}s ({frac:.0%} voiced) — possible hidden re-read"
+                fails.append(f"speech with no words at {g0:.1f}-{g1:.1f}s ({frac:.0%} voiced) - possible hidden re-read"
                              + (f"; isolated listen: '{' '.join(ws)}'" if ws else ""))
 
 # re-read rule: the same 2-4 word phrase starting again within 1.5 s of the first copy ending
@@ -324,7 +324,7 @@ if halluc: notes.append(f"ignored {len(halluc)} word(s) heard over silence (Whis
 
 rep = os.path.join(Q, "qa_report.txt")
 with open(rep, "w") as f:
-    f.write(("PASS" if not fails else "FAIL") + f" — {len(fails)} problem(s)\n")
+    f.write(("PASS" if not fails else "FAIL") + f" - {len(fails)} problem(s)\n")
     for x in fails: f.write("  FAIL " + x + "\n")
     for x in notes: f.write("  note " + x + "\n")
 print(open(rep).read()); sys.exit(1 if fails else 0)

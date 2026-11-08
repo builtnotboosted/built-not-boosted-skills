@@ -279,12 +279,12 @@ def gate(cfg):
     r = subprocess.run([sys.executable, os.path.join(SCRIPTS, "qa_gate.py"), v, P(cfg, "script.txt"), P(cfg, "build", "qa")], env=project_env(cfg))
     if not os.path.exists(rep) or os.path.getmtime(rep) < t0:          # the words gate crashed: never leave an old PASS behind
         os.makedirs(os.path.dirname(rep), exist_ok=True)
-        open(rep, "w").write("FAIL — the words gate did not complete (see the error above; is a Whisper model available?)\n")
+        open(rep, "w").write("FAIL - the words gate did not complete (see the error above; is a Whisper model available?)\n")
     # the words gate can't hear a clipped word-tail or a start inside a word: check every audio cut lands in quiet
     c = subprocess.run([sys.executable, os.path.join(SCRIPTS, "cut_check.py"), cfg["_dir"]], capture_output=True, text=True, env=project_env(cfg))
     print(c.stdout, end="")
     body = open(rep).read() if os.path.exists(rep) else ""
-    open(rep, "w").write(("FAIL — audio cut check (a cut lands on sound)\n" + c.stdout + "\n" + body) if c.returncode else (body.rstrip("\n") + "\n" + c.stdout))
+    open(rep, "w").write(("FAIL - audio cut check (a cut lands on sound)\n" + c.stdout + "\n" + body) if c.returncode else (body.rstrip("\n") + "\n" + c.stdout))
     sys.exit(r.returncode or c.returncode)
 
 
@@ -419,7 +419,7 @@ def cutlist(cfg, qa_head):
     edl = json.load(open(P(cfg, "build", "edl.json"))); T = json.load(open(P(cfg, "picker", "takes.json")))
     picks = json.load(open(P(cfg, "picker", "picks.json")))
     kept = {u["sid"]: u for u in edl["units"]}
-    L = [f"# {cfg['title']} — {cfg['version']} cut list", "",
+    L = [f"# {cfg['title']} - {cfg['version']} cut list", "",
          f"Runtime {edl['total']:.1f}s · {len(kept)} of {len(T['sentences'])} script lines kept · {len(edl['pieces'])} shots · QA gate: {qa_head}", "",
          "| Line | Take | Source (raw s) | Trims inside the take | Script |", "|---|---|---|---|---|"]
     for s in T["sentences"]:
@@ -448,6 +448,8 @@ def deliver(cfg):
              (P(cfg, "picker", "picks.json"), f"{cfg['version']}-picks.json")]
     if os.path.exists(os.path.join(b, "chapters.txt")):         # long-form: paste into the YouTube description
         files.append((os.path.join(b, "chapters.txt"), f"{cfg['version']}-youtube-chapters.txt"))
+    if os.path.exists(os.path.join(b, "caption_check.txt")):    # captions vs script: every fix, reword kept, and CHECK
+        files.append((os.path.join(b, "caption_check.txt"), f"{cfg['version']}-caption-check.txt"))
     lead = (cfg.get("cover") or {}).get("lead", "A")
     for cpng in sorted(glob.glob(P(cfg, "cover", "cover_*.png"))):
         n = os.path.basename(cpng)[6:-4]

@@ -1,4 +1,4 @@
-// Render motion-graphic specs to transparent ProRes 4444 (.mov) — or PNG stills in preview mode.
+// Render motion-graphic specs to transparent ProRes 4444 (.mov) - or PNG stills in preview mode.
 // usage: node mg_render.js specs.json outDir [preview]
 //   spec: { "id":"stat_bankrate", "tpl":"stat", "dur":3.2, "params":{...}, "previewAt":[2.0] }
 const { chromium } = require('playwright');

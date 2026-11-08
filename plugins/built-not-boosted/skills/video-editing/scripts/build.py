@@ -613,7 +613,7 @@ def final(edl, C, B, caps):
         ins += ["-i", cover]
         parts.append(f"{cur}[{idx}:v]overlay=0:0:enable='between(t,0,0.13)'[vp];"); cur = "[vp]"; idx += 1
     else:
-        if not LONG: print("final: NOTE no cover yet (vedit.py cover) — first frame is the plain shot")
+        if not LONG: print("final: NOTE no cover yet (vedit.py cover) - first frame is the plain shot")
     parts.append(f"{cur}fade=t=out:st={dur - 0.25:.3f}:d=0.25[vout]")
     pre = os.path.join(OUTD, "final_pre.mp4")
     sh(["ffmpeg", "-y", "-v", "error", *ins, "-filter_complex", "".join(parts), "-map", "[vout]", "-map", "0:a",

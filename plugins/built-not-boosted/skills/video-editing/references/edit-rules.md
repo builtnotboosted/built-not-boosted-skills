@@ -22,7 +22,7 @@ Restarts, re-reads and stumbles always come out. A lone short "um" (under 0.45 s
 
 ## Captions
 
-- Transcribed from the finished cut (so they match exactly), then checked line by line against the script with a prompted re-listen: a mishearing takes the script's words (FIX), a live reword keeps the speaker's words (REWORD), anything unclear is listed for a human (CHECK).
+- Transcribed from the finished cut (so they match exactly), then checked against the script (`scripts/caption_check.py`, run in the caps stage). Words that both unprompted listens heard are the speaker's and stay (REWORD: a live reword is not an error). Only the lines that differ from the script get a re-listen prompted with that one line; script words win only where that re-listen hears them (FIX), and a word the caption lacks is added only if an unprompted listen heard it too. Anything unclear is listed for a human (CHECK). The report ships with the video.
 - A word Whisper stretched over a whole phrase is re-heard on its own and the missing words refilled.
 - House style: bold sans in a dark rounded box, centred in the lower middle (y ≈ 1558 on 1080x1920), at most two lines, key words (figures, names) in the brand highlight colour, figures as numerals ("4%", "8 to 1"), hidden under full-frame section cards and resumed when the card clears. The SRT always carries every line.
 - `captions.fix` corrects names Whisper mishears. `captions.key` is matched word by word: **never put a single letter in it** (an "A" category highlighted every article "a").

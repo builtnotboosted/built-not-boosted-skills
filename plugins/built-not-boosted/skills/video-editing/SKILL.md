@@ -50,6 +50,7 @@ The hand-over to the person always includes:
 
 - Gate PASS, fresh (newer than the render).
 - Lip sync measured on the final render: `scripts/lipsync.py build/final.mp4 <t0> <t1>` on two or three face-to-camera stretches, each within ±40 ms.
+- Caption check read (`vedit.py captions <slug>`, delivered as `vN-caption-check.txt`): the FIXes look sane, and every CHECK is named as a line for the person to listen to.
 - Runtime and loudness stated.
 - Every change to their picks, with the reason, and the lines worth listening to.
 - Cover A versus B, and the grid preview.

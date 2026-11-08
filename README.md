@@ -66,4 +66,4 @@ Then say: *"Set up my brand profile"*. That runs `brand-setup`, and you're away.
 
 These skills are a snapshot of the private ones we use every day. As ours improve, we bring the lessons across here. Watch the repo or check the changelog on the site.
 
-Made by Anna & Patrick at [Built Not Boosted](https://builtnotboosted.com). Built, not boosted.
+Made at [Built Not Boosted](https://builtnotboosted.com). Built, not boosted.
